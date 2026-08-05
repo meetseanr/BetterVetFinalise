@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Objective Build — Finalise vetting (concept)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d1d1f; --ink-med:#4a4a4c; --ink-light:#7a7a80; --ink-faint:#a4a4aa;
+  --bg:#ffffff; --card:#ffffff; --panel:#f7f8fa;
+  --border:#e3e5e9; --border-light:#eef0f3;
+  --blue:#1c5cbd; --blue-dark:#164d9f; --blue-tint:#eef4fd;
+  --green:#7ab51d; --green-bg:#e9f6d8; --green-text:#4f7a14;
+  --purple:#8f2fa3;
+  --amber:#b3720a; --amber-bg:#fff6e6; --amber-border:#f3ddb0;
+  --negative:#c0392b; --negative-bg:#fdeeec;
+  --neutral-bg:#f2f2f5;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.16),0 4px 12px rgba(0,0,0,.08);
+  --radius:8px; --radius-sm:4px; --sidebar-w:44px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg); color:var(--ink); font-size:13px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
+
+/* ---------- top strip + topbar ---------- */
+.top-strip{height:5px;background:var(--green)}
+.topbar{
+  height:47px;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 18px;gap:16px;position:sticky;top:0;z-index:40;
+}
+.logo{display:flex;align-items:center;gap:7px;font-size:16px;letter-spacing:-.2px}
+.logo-mark{width:17px;height:17px;border-radius:2px;background:var(--green);position:relative;flex:none}
+.logo-mark:before{content:"";position:absolute;left:3px;bottom:3px;width:2.5px;height:6px;background:#fff}
+.logo-mark:after{content:"";position:absolute;left:7px;bottom:3px;width:2.5px;height:10px;background:#fff;
+  box-shadow:4px 0 0 #fff}
+.logo b{font-weight:700;color:#1d1d1f}
+.logo span{font-weight:400;color:var(--green)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.icon-btn{width:26px;height:26px;display:grid;place-items:center;border-radius:var(--radius-sm);color:var(--ink-med);position:relative}
+.icon-btn:hover{background:var(--neutral-bg)}
+.dot-badge:after{content:"";position:absolute;top:3px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--negative)}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px;font-weight:600;display:grid;place-items:center;letter-spacing:.3px}
+.user-name{font-size:13px;color:var(--ink);font-weight:400}
+.user-chip{display:flex;align-items:center;gap:8px;padding:3px 6px;border-radius:var(--radius-sm)}
+.user-chip:hover{background:var(--neutral-bg)}
+
+/* ---------- shell ---------- */
+.shell{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{
+  width:var(--sidebar-w);flex:none;background:#fff;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;
+}
+.side-item{width:100%;height:38px;display:grid;place-items:center;color:#8b8f96;position:relative}
+.side-item:hover{background:var(--neutral-bg);color:var(--ink-med)}
+.side-item.active{background:#eef2f7;color:var(--blue)}
+.side-item.active:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue)}
+.side-spacer{flex:1}
+
+.main{flex:1;display:flex;min-width:0}
+.content{flex:1;min-width:0;padding:14px 22px 60px}
+.breadcrumb{font-size:12px;color:var(--ink-light);margin-bottom:12px}
+.page-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.back-btn{color:var(--ink-med);width:24px;height:24px;display:grid;place-items:center;border-radius:var(--radius-sm)}
+.back-btn:hover{background:var(--neutral-bg)}
+.page-title{font-size:17px;font-weight:600;letter-spacing:-.2px}
+.tabs-row{display:flex;align-items:center;border-bottom:1px solid var(--border);margin-bottom:18px;gap:2px}
+.tab{padding:8px 12px 9px;font-size:13px;color:var(--ink-med);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.tab-count{color:var(--ink-faint);font-size:12px;margin-left:4px}
+.btn{
+  padding:7px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;
+  transition:background .15s,box-shadow .15s;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-primary:disabled{background:#c9d3e2;color:#fff;cursor:not-allowed}
+.btn-ghost{color:var(--ink-med)}
+.btn-ghost:hover{background:var(--neutral-bg)}
+.btn-outline{border:1px solid var(--border);color:var(--ink-med);background:#fff;font-size:12px;padding:5px 10px;display:inline-flex;align-items:center;gap:5px}
+.btn-outline:hover{background:var(--neutral-bg)}
+.head-actions{margin-left:auto;display:flex;gap:8px;padding-bottom:6px}
+
+/* ---------- table ---------- */
+.table-shell{background:var(--panel);border:1px solid var(--border-light);border-radius:var(--radius);padding:14px}
+.table-card{background:#fff;border:1px solid var(--border-light);border-radius:var(--radius);overflow:hidden}
+.table-search{display:flex;align-items:center;gap:8px;padding:12px 14px;color:var(--ink-faint)}
+.table-search input{border:none;outline:none;flex:1;font-size:13px}
+table{width:100%;border-collapse:collapse}
+thead th{
+  text-align:left;font-size:12px;font-weight:600;color:var(--ink-med);
+  padding:10px 14px;border-top:1px solid var(--border-light);border-bottom:1px solid var(--border-light);
+  white-space:nowrap;background:#fff;
+}
+tbody td{padding:11px 14px;font-size:13px;color:var(--ink-med);border-bottom:1px solid var(--border-light);vertical-align:middle}
+tbody tr.selected{background:var(--blue-tint)}
+tbody tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+.app-link{color:var(--ink);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.assignee{display:flex;align-items:center;gap:8px}
+.assignee .avatar{width:22px;height:22px;font-size:9px}
+.chip{display:inline-block;padding:2px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;white-space:nowrap}
+.chip-green{background:var(--green-bg);color:var(--green-text)}
+.chip-grey{background:var(--neutral-bg);color:var(--ink-light)}
+.chip-blue{background:var(--blue-tint);color:var(--blue)}
+.kebab{color:var(--ink-light);padding:2px 6px;border-radius:var(--radius-sm)}
+.kebab:hover{background:#e6ecf6}
+.empty{padding:44px 14px;text-align:center;color:var(--ink-faint);font-size:13px;background:#fff}
+
+/* ---------- right panel ---------- */
+.detail{
+  width:430px;flex:none;border-left:1px solid var(--border);background:#fff;
+  padding:14px 0 40px;overflow-y:auto;max-height:calc(100vh - 52px);position:sticky;top:52px;
+}
+.detail-sec-head{display:flex;align-items:center;padding:10px 18px;gap:10px;border-bottom:1px solid var(--border-light)}
+.detail-sec-head h3{font-size:13px;font-weight:600;flex:1}
+.detail-rows{padding:6px 18px 14px}
+.drow{display:flex;gap:14px;padding:7px 0;border-bottom:1px solid var(--border-light);font-size:12.5px}
+.drow:last-child{border-bottom:none}
+.drow dt{width:118px;flex:none;color:var(--ink-light)}
+.drow dd{color:var(--ink);flex:1}
+.chev{color:var(--ink-light);width:22px;height:22px;display:grid;place-items:center;border-radius:var(--radius-sm)}
+.chev:hover{background:var(--neutral-bg)}
+.outcome-strip{margin:0 18px 12px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--green-bg);border:1px solid #d3ebae;font-size:12.5px;color:var(--green-text);display:none}
+.outcome-strip.show{display:block}
+.outcome-strip.neutral{background:var(--neutral-bg);border-color:var(--border);color:var(--ink-med)}
+.outcome-strip b{font-weight:600}
+
+/* ---------- modal ---------- */
+.backdrop{
+  position:fixed;inset:0;background:rgba(29,29,31,.35);z-index:60;
+  display:none;align-items:flex-start;justify-content:center;padding:70px 16px;
+}
+.backdrop.open{display:flex}
+.modal{
+  background:#fff;border:1px solid #c9ced6;box-shadow:var(--shadow-lg);
+  width:520px;max-width:100%;border-radius:2px;
+  animation:pop .16s ease-out;position:relative;
+}
+.modal.wide{width:560px}
+@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.99)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;cursor:grab}
+.modal-head:active{cursor:grabbing}
+.grip{color:#b9bec6;letter-spacing:-2px;font-size:14px;line-height:1;user-select:none}
+.modal-head h2{font-size:15px;font-weight:600;flex:1}
+.modal-close{color:var(--ink-light);width:24px;height:24px;display:grid;place-items:center;border-radius:var(--radius-sm)}
+.modal-close:hover{background:var(--neutral-bg);color:var(--ink)}
+.modal-body{padding:0 16px 18px}
+.modal-foot{
+  display:flex;align-items:center;padding:12px 16px;border-top:1px solid var(--border);
+  background:#fbfbfc;gap:10px;
+}
+.modal-foot .spacer{flex:1}
+.step-hint{font-size:11px;color:var(--ink-faint)}
+
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.label .req{color:var(--negative);font-weight:600}
+.hint{font-size:11.5px;color:var(--ink-light);margin-top:5px;line-height:1.45}
+.control{
+  width:100%;padding:8px 10px;border:1px solid #c9ced6;border-radius:2px;
+  background:#f4f5f7;outline:none;transition:border-color .15s,box-shadow .15s,background .15s;
+}
+.control:hover{background-color:#eef0f3}
+.control:focus{background-color:#fff;border-color:var(--blue);box-shadow:0 0 0 2px rgba(28,92,189,.15)}
+select.control{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a7a80' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+textarea.control{min-height:76px;resize:vertical;line-height:1.5}
+.control.placeholder-state{color:var(--ink-light)}
+.two-col{display:flex;gap:12px}
+.two-col > *{flex:1;min-width:0}
+
+/* ---------- date picker ---------- */
+.dp-wrap{position:relative;width:212px}
+.dp-input{
+  width:100%;padding:8px 34px 8px 10px;border:1px solid #c9ced6;border-radius:2px;
+  background:#f4f5f7;outline:none;cursor:pointer;text-align:left;font-size:13px;color:var(--ink);
+}
+.dp-input:hover{background:#eef0f3}
+.dp-wrap.open .dp-input{background:#fff;border-color:var(--blue);box-shadow:0 0 0 2px rgba(28,92,189,.15)}
+.dp-icon{position:absolute;right:9px;top:8px;color:var(--ink-light);pointer-events:none}
+.dp-pop{
+  position:absolute;top:calc(100% + 5px);left:0;z-index:5;width:250px;
+  background:#fff;border:1px solid #c9ced6;border-radius:4px;box-shadow:var(--shadow-md);
+  padding:10px;display:none;
+}
+.dp-wrap.open .dp-pop{display:block}
+.dp-nav{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.dp-nav .m{flex:1;text-align:center;font-size:12.5px;font-weight:600}
+.dp-nav button{width:24px;height:24px;display:grid;place-items:center;border-radius:4px;color:var(--ink-med)}
+.dp-nav button:hover:not(:disabled){background:var(--neutral-bg)}
+.dp-nav button:disabled{color:#d4d6db;cursor:not-allowed}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-dow{font-size:9.5px;font-weight:600;color:var(--ink-faint);text-align:center;padding-bottom:3px;text-transform:uppercase}
+.dp-day{height:28px;border-radius:4px;font-size:12px;color:var(--ink-med);display:grid;place-items:center}
+.dp-day:hover:not(:disabled){background:var(--blue-tint);color:var(--blue)}
+.dp-day:disabled{color:#d4d6db;cursor:not-allowed}
+.dp-day.other{color:var(--ink-faint)}
+.dp-day.today{box-shadow:inset 0 0 0 1px var(--blue);color:var(--blue);font-weight:600}
+.dp-day.sel{background:var(--blue);color:#fff;font-weight:600}
+.dp-day.sel:hover{background:var(--blue-dark);color:#fff}
+.dp-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)}
+.dp-foot button{font-size:11.5px;color:var(--blue);font-weight:500}
+.dp-foot span{font-size:10.5px;color:var(--ink-faint)}
+.date-row{display:flex;align-items:center;gap:12px}
+.date-echo{font-size:12px;color:var(--ink-light)}
+
+.reveal{
+  border-left:2px solid var(--blue);padding-left:12px;margin:16px 0;
+  animation:slide .2s ease-out;
+}
+@keyframes slide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.note-box{
+  background:var(--blue-tint);border:1px solid #d3e2f8;border-radius:2px;
+  padding:10px 12px;font-size:12px;color:#1a4c96;line-height:1.5;display:flex;gap:9px;
+}
+.note-box svg{flex:none;margin-top:1px}
+.warn-box{
+  background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:2px;
+  padding:9px 11px;font-size:11.5px;color:var(--amber);line-height:1.45;margin-top:8px;
+  display:flex;gap:8px;align-items:flex-start;
+}
+.warn-box svg{flex:none;margin-top:1px}
+.hidden{display:none !important}
+
+.summary{border:1px solid var(--border);border-radius:2px;overflow:hidden;margin:4px 0 14px}
+.summary-row{display:flex;gap:12px;padding:9px 12px;font-size:12.5px;border-bottom:1px solid var(--border-light);background:#fff}
+.summary-row:last-child{border-bottom:none}
+.summary-row dt{width:120px;flex:none;color:var(--ink-light)}
+.summary-row dd{color:var(--ink);flex:1;font-weight:500}
+.summary-row dd.muted{color:var(--ink-faint);font-weight:400;font-style:italic}
+.irrev{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--ink-med);line-height:1.5;
+  background:var(--negative-bg);border:1px solid #f6d5d0;border-radius:2px;padding:10px 12px}
+.irrev svg{flex:none;margin-top:1px;color:var(--negative)}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translate(-50%,20px);
+  background:var(--ink);color:#fff;padding:11px 18px;border-radius:var(--radius);
+  font-size:12.5px;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;
+  transition:opacity .3s ease,transform .3s ease;z-index:90;display:flex;align-items:center;gap:9px;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- demo controls + proto tag ---------- */
+.demo-bar{
+  position:fixed;bottom:16px;left:16px;z-index:100;background:#fff;border:1px solid var(--border);
+  border-radius:6px;box-shadow:var(--shadow-sm);padding:7px 11px;display:flex;align-items:center;gap:10px;
+  font-size:11px;color:var(--ink-light);
+}
+.demo-bar .lbl{font-weight:600;color:var(--ink-med);letter-spacing:.3px;text-transform:uppercase;font-size:9.5px}
+.seg{display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.seg button{padding:3px 8px;font-size:11px;color:var(--ink-med);background:#fff}
+.seg button.on{background:var(--blue);color:#fff}
+.demo-bar .reset{color:var(--blue);font-size:11px;font-weight:500}
+.proto-tag{
+  position:fixed;bottom:16px;right:16px;font-size:11px;color:var(--ink-faint);
+  background:var(--card);padding:4px 12px;border-radius:6px;border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);z-index:100;max-width:430px;line-height:1.45;
+}
+@media (max-width:1180px){ .detail{width:360px} }
+@media (max-width:980px){ .detail{display:none} }
+</style>
+</head>
+<body>
+
+<div class="top-strip"></div>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark"></span><b>Objective</b> <span>BUILD</span></div>
+  <div class="topbar-right">
+    <button class="icon-btn dot-badge" title="Tasks">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
+    </button>
+    <button class="icon-btn" title="Notifications">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 10-12 0c0 7-2 8-2 8h16s-2-1-2-8"/><path d="M10.3 21a1.9 1.9 0 003.4 0"/></svg>
+    </button>
+    <button class="user-chip">
+      <span class="avatar">SR</span><span class="user-name">Sean Richards</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a7a80" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidebar">
+    <button class="side-item" title="Dashboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+    <button class="side-item" title="Applications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+    <button class="side-item" title="Documents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg></button>
+    <button class="side-item active" title="Teams"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.3"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16.5 14.5c2.3.4 4 2 4 4.5"/></svg></button>
+    <button class="side-item" title="Configuration"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14.7 6.3a4.5 4.5 0 01-6.3 6.3L4 17v3h3l4.4-4.4a4.5 4.5 0 016.3-6.3l-2.5 2.5-2.5-2.5z"/></svg></button>
+    <button class="side-item" title="Expand"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6l6 6-6 6"/></svg></button>
+    <div class="side-spacer"></div>
+    <button class="side-item" title="About"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
+    <button class="side-item" title="Help"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 113.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg></button>
+  </nav>
+
+  <div class="main">
+    <main class="content">
+      <div class="breadcrumb">Teams</div>
+      <div class="page-head">
+        <button class="back-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <div class="page-title">Vetting team (7 days)</div>
+      </div>
+
+      <div class="tabs-row">
+        <button class="tab" data-tab="new">New</button>
+        <button class="tab active" data-tab="inprogress">In progress <span class="tab-count" id="countInProgress">1</span></button>
+        <button class="tab" data-tab="complete">Complete <span class="tab-count" id="countComplete">0</span></button>
+        <button class="tab" data-tab="members">Team members</button>
+        <div class="head-actions">
+          <button class="btn btn-primary" id="finaliseBtn">Finalise</button>
+        </div>
+      </div>
+
+      <div class="table-shell">
+        <div class="table-card">
+          <div class="table-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>
+            <input placeholder="Search">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:98px">Age <span style="color:var(--ink-faint)">&#8595;</span></th>
+                <th style="width:118px">PAN ID</th>
+                <th style="width:130px">Application</th>
+                <th>Address</th>
+                <th style="width:170px">Assigned to</th>
+                <th style="width:88px">Referrals</th>
+                <th style="width:96px">Forwarded</th>
+                <th style="width:64px">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <div class="empty hidden" id="emptyState">No applications in this list.</div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="detail">
+      <div class="detail-sec-head">
+        <h3>Application detail</h3>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 3l4 4-11 11H6v-4z"/></svg></button>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 15l6-6 6 6"/></svg></button>
+      </div>
+
+      <div class="outcome-strip" id="outcomeStrip"></div>
+
+      <div class="detail-rows">
+        <dl>
+          <div class="drow"><dt>PAN ID</dt><dd>PAN-12607035</dd></div>
+          <div class="drow"><dt>Application</dt><dd>DA445607</dd></div>
+          <div class="drow"><dt>Address</dt><dd>138 Skye Point Road, Coal Point NSW 2283</dd></div>
+          <div class="drow"><dt>Application type</dt><dd>Development application</dd></div>
+          <div class="drow"><dt>Development type</dt><dd>Residential</dd></div>
+          <div class="drow"><dt>EDC (ex GST)</dt><dd>AU$2,355,837</dd></div>
+          <div class="drow"><dt>Description</dt><dd>Alterations and additions to a dwelling including construction of a detached studio</dd></div>
+          <div class="drow"><dt>Applicant name</dt><dd>Isaiah (Gray) Kautzer</dd></div>
+          <div class="drow"><dt>Applicant phone</dt><dd>+61 499 230 611</dd></div>
+          <div class="drow"><dt>Applicant email</dt><dd>Rubye57@hotmail.com</dd></div>
+        </dl>
+      </div>
+
+      <div class="detail-sec-head"><h3>Map preview</h3>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></button>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="detail-sec-head"><h3>Planning summary</h3>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="detail-sec-head"><h3>Documents (9)</h3>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg></button>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="detail-sec-head"><h3>RFI letters (0)</h3>
+        <button class="btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> Add issue</button>
+        <button class="btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg> Manage</button>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="detail-sec-head"><h3>Referrals (0)</h3>
+        <button class="btn-outline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg> Refer</button>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="detail-sec-head"><h3>File note</h3>
+        <button class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ========== MODAL 1 — consolidated decision capture ========== -->
+<div class="backdrop" id="bd1">
+  <div class="modal wide" id="modal1">
+    <div class="modal-head" data-drag="modal1">
+      <span class="grip">&#8942;&#8942;</span>
+      <h2>Finalise application: DA445607</h2>
+      <button class="modal-close" data-close="bd1">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <label class="label" for="outcome">Set outcome to <span class="req">*</span></label>
+        <select class="control placeholder-state" id="outcome">
+          <option value="">Please make a selection</option>
+          <option value="lodge">Accepted and lodged</option>
+          <option value="returned">Returned</option>
+          <option value="withdrawn">Withdrawn</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="dateField">
+        <label class="label"><span id="dateLabel">Date lodged</span> <span class="req">*</span></label>
+        <div class="date-row">
+          <div class="dp-wrap" id="dpWrap">
+            <button type="button" class="dp-input" id="dpInput"></button>
+            <span class="dp-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            </span>
+            <div class="dp-pop" id="dpPop">
+              <div class="dp-nav">
+                <button type="button" id="dpPrev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></button>
+                <span class="m" id="dpMonth"></span>
+                <button type="button" id="dpNext"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+              </div>
+              <div class="dp-grid" id="dpGrid"></div>
+              <div class="dp-foot">
+                <button type="button" id="dpToday">Today</button>
+                <span>Future dates unavailable</span>
+              </div>
+            </div>
+          </div>
+          <span class="date-echo" id="dateEcho"></span>
+        </div>
+        <div class="hint" id="dateHint">Defaults to today. Change it if the decision was made on an earlier date.</div>
+        <div class="warn-box hidden" id="backdateWarn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6A2 2 0 0022 18L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+          <span id="backdateText"></span>
+        </div>
+      </div>
+
+      <!-- conditional: forwarding -->
+      <div class="reveal hidden" id="teamReveal">
+        <label class="label" for="team">Forward to planning team <span class="req">*</span></label>
+        <select class="control placeholder-state" id="team">
+          <option value="">Please make team selection</option>
+          <option>Planning team East</option>
+          <option>Planning team North</option>
+          <option>Planning team South</option>
+          <option>Planning team West</option>
+          <option>Fast track assessment team</option>
+        </select>
+        <div class="hint">Only enabled teams are listed. The assessment begins when the team receives the application.</div>
+      </div>
+
+      <div class="field hidden" id="alreadyFwd">
+        <div class="note-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <span>Already forwarded to <b>Planning team East</b> on 14 Jul 2026. No further routing required.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="fileNote">Internal file note</label>
+        <textarea class="control" id="fileNote" placeholder="Record the reasoning behind this decision…"></textarea>
+        <div class="hint">One note, recorded against the decision and visible in the application's file note history. Council staff only — not shared with the applicant.</div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <span class="step-hint">Step 1 of 2</span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" data-close="bd1">Cancel</button>
+      <button class="btn btn-primary" id="toConfirm" disabled>Finalise</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL 2 — confirmation with decision summary ========== -->
+<div class="backdrop" id="bd2">
+  <div class="modal" id="modal2">
+    <div class="modal-head" data-drag="modal2">
+      <span class="grip">&#8942;&#8942;</span>
+      <h2>Confirm decision: DA445607</h2>
+      <button class="modal-close" data-close="bd2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--ink-med);margin:2px 0 12px">Check the decision you are about to record.</p>
+      <dl class="summary" id="summary"></dl>
+      <div class="irrev">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>This finalises the application vetting process. <b>The decision cannot be undone.</b></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="step-hint">Step 2 of 2</span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="backToOne">Back</button>
+      <button class="btn btn-primary" id="doConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7ab51d" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastText"></span>
+</div>
+
+<div class="demo-bar">
+  <span class="lbl">Demo state</span>
+  <span>Already forwarded</span>
+  <span class="seg">
+    <button id="fwdNo" class="on">No</button><button id="fwdYes">Yes</button>
+  </span>
+  <button class="reset" id="resetDemo">Reset</button>
+</div>
+
+<div class="proto-tag">Objective Build — Finalise vetting concept — Vetting officer (Sean Richards) — This is a concept demonstration only and does not conform to the Objective Design Language. Commercial in confidence.</div>
+
+<script>
+/* ---------------- state ---------------- */
+const state = {
+  forwarded: false,
+  finalised: false,
+  tab: 'inprogress',
+  outcome: '', date: '', team: '', note: ''
+};
+
+const OUTCOMES = {
+  lodge:    { label:'Accepted and lodged', dateLabel:'Date lodged',    past:'lodged',    status:'Lodged',    chip:'chip-green' },
+  returned: { label:'Returned',         dateLabel:'Date returned',  past:'returned',  status:'Returned',  chip:'chip-grey'  },
+  withdrawn:{ label:'Withdrawn',        dateLabel:'Date withdrawn', past:'withdrawn', status:'Withdrawn', chip:'chip-grey'  }
+};
+
+const $ = id => document.getElementById(id);
+const todayISO = () => new Date().toISOString().slice(0,10);
+const MON_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt = v => {
+  if(!v) return '';
+  const [y,m,d] = v.split('-').map(Number);
+  return `${d} ${MON_ABBR[m-1]} ${y}`;   // AU order, locale-independent
+};
+const daysBetween = (a,b) => Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000);
+
+/* ---------------- table rendering ---------------- */
+function renderTable(){
+  const tb = $('tbody'), empty = $('emptyState');
+  let rows = '';
+  const showRow =
+    (state.tab === 'inprogress' && !state.finalised) ||
+    (state.tab === 'complete'  &&  state.finalised);
+
+  if(state.tab === 'members'){
+    ['Sean Richards','Nadine Whitcombe','Priya Anand','Tom Kelleher'].forEach(n=>{
+      const init = n.split(' ').map(w=>w[0]).join('');
+      rows += `<tr><td colspan="8"><span class="assignee"><span class="avatar">${init}</span>${n}</span></td></tr>`;
+    });
+    tb.innerHTML = rows; empty.classList.add('hidden'); return;
+  }
+
+  if(showRow){
+    const isFwd = state.forwarded || (state.finalised && state.outcome === 'lodge' && !!state.team);
+    const fwd = isFwd ? `<span class="chip chip-green">Yes</span>` : `<span class="chip chip-grey">No</span>`;
+    const oc = state.finalised
+      ? `<span class="chip ${OUTCOMES[state.outcome].chip}" style="margin-left:8px">${OUTCOMES[state.outcome].status}</span>` : '';
+    rows = `<tr class="selected">
+      <td>33 days</td>
+      <td>PAN-12607035</td>
+      <td><span class="app-link">DA445607
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a7a80" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M15 5H5.5A1.5 1.5 0 004 6.5V16"/></svg>
+      </span>${oc}</td>
+      <td>138 Skye Point Road, Coal Point NSW 2283</td>
+      <td><span class="assignee"><span class="avatar">SR</span>Sean Richards</span></td>
+      <td>--</td>
+      <td>${fwd}</td>
+      <td><button class="kebab">&#8942;</button></td>
+    </tr>`;
+  }
+  tb.innerHTML = rows;
+  empty.classList.toggle('hidden', !!rows);
+  empty.textContent = state.tab === 'new'
+    ? 'No new applications awaiting vetting.'
+    : 'No applications in this list.';
+
+  $('countInProgress').textContent = state.finalised ? 0 : 1;
+  $('countComplete').textContent   = state.finalised ? 1 : 0;
+  $('finaliseBtn').disabled = state.finalised;
+}
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    state.tab = t.dataset.tab;
+    renderTable();
+  });
+});
+
+/* ---------------- modal plumbing ---------------- */
+function open(id){ $(id).classList.add('open'); }
+function close(id){ $(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(b=>
+  b.addEventListener('click',()=>close(b.dataset.close)));
+document.querySelectorAll('.backdrop').forEach(bd=>
+  bd.addEventListener('mousedown',e=>{ if(e.target===bd) close(bd.id); }));
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ close('bd2'); close('bd1'); }
+});
+
+/* draggable modals, mirroring the grip affordance in the current dialogs */
+document.querySelectorAll('[data-drag]').forEach(h=>{
+  h.addEventListener('mousedown',e=>{
+    if(e.target.closest('button')) return;
+    const m = $(h.dataset.drag);
+    const r = m.getBoundingClientRect();
+    const ox = e.clientX - r.left, oy = e.clientY - r.top;
+    m.style.position='fixed'; m.style.margin='0';
+    m.style.left = r.left+'px'; m.style.top = r.top+'px';
+    const move = ev => { m.style.left=(ev.clientX-ox)+'px'; m.style.top=(ev.clientY-oy)+'px'; };
+    const up = () => { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); };
+    document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);
+    e.preventDefault();
+  });
+});
+
+/* ---------------- open decision modal ---------------- */
+$('finaliseBtn').addEventListener('click',()=>{
+  $('outcome').value=''; $('outcome').classList.add('placeholder-state');
+  $('team').value='';    $('team').classList.add('placeholder-state');
+  $('fileNote').value='';
+  setDate(todayISO());
+  dpView = new Date(todayISO()+'T00:00:00');
+  closeDp();
+  ['dateField','teamReveal','alreadyFwd','backdateWarn'].forEach(i=>$(i).classList.add('hidden'));
+  ['modal1','modal2'].forEach(i=>{ $(i).style.position=''; $(i).style.left=''; $(i).style.top=''; });
+  syncDate(); validate();
+  open('bd1');
+});
+
+/* ---------------- conditional logic ---------------- */
+$('outcome').addEventListener('change',e=>{
+  const v = e.target.value;
+  e.target.classList.toggle('placeholder-state', !v);
+  $('dateField').classList.toggle('hidden', !v);
+  if(v) $('dateLabel').textContent = OUTCOMES[v].dateLabel;
+
+  // AC: team list only when accepting & lodging AND not yet forwarded
+  const needsTeam = (v === 'lodge' && !state.forwarded);
+  $('teamReveal').classList.toggle('hidden', !needsTeam);
+  $('alreadyFwd').classList.toggle('hidden', !(v === 'lodge' && state.forwarded));
+  if(!needsTeam){ $('team').value=''; $('team').classList.add('placeholder-state'); }
+
+  $('dateHint').textContent = v === 'lodge'
+    ? 'Defaults to today. This is the lodgement date recorded against the application, not the date you complete this action.'
+    : 'Defaults to today. Change it if the decision was made on an earlier date.';
+  syncDate(); validate();
+});
+
+$('team').addEventListener('change',e=>{
+  e.target.classList.toggle('placeholder-state', !e.target.value);
+  validate();
+});
+
+/* ---------------- date picker ---------------- */
+let dpView = new Date();
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+function setDate(v){
+  state.date = v;
+  $('dpInput').textContent = fmt(v);
+}
+function openDp(){ $('dpWrap').classList.add('open'); drawDp(); }
+function closeDp(){ $('dpWrap').classList.remove('open'); }
+
+function drawDp(){
+  const t = todayISO();
+  const y = dpView.getFullYear(), m = dpView.getMonth();
+  $('dpMonth').textContent = `${MONTHS[m]} ${y}`;
+  // disable forward nav past the month containing today
+  const tD = new Date(t+'T00:00:00');
+  $('dpNext').disabled = (y === tD.getFullYear() && m >= tD.getMonth()) || y > tD.getFullYear();
+
+  let html = ['M','T','W','T','F','S','S'].map(d=>`<div class="dp-dow">${d}</div>`).join('');
+  const first = new Date(y, m, 1);
+  const lead = (first.getDay() + 6) % 7;               // Monday-first
+  const start = new Date(y, m, 1 - lead);
+  for(let i=0;i<42;i++){
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate()+i);
+    const dv = iso(d);
+    if(i>=35 && d.getMonth()!==m) break;
+    const cls = ['dp-day'];
+    if(d.getMonth()!==m) cls.push('other');
+    if(dv===t) cls.push('today');
+    if(dv===state.date) cls.push('sel');
+    html += `<button type="button" class="${cls.join(' ')}" data-d="${dv}" ${dv>t?'disabled':''}>${d.getDate()}</button>`;
+  }
+  $('dpGrid').innerHTML = html;
+  $('dpGrid').querySelectorAll('.dp-day').forEach(b=>b.addEventListener('click',()=>{
+    setDate(b.dataset.d); closeDp(); syncDate(); validate();
+  }));
+}
+$('dpInput').addEventListener('click',e=>{
+  e.stopPropagation();
+  $('dpWrap').classList.contains('open') ? closeDp() : openDp();
+});
+$('dpPop').addEventListener('click',e=>e.stopPropagation());
+$('dpPrev').addEventListener('click',()=>{ dpView.setMonth(dpView.getMonth()-1); drawDp(); });
+$('dpNext').addEventListener('click',()=>{ dpView.setMonth(dpView.getMonth()+1); drawDp(); });
+$('dpToday').addEventListener('click',()=>{
+  setDate(todayISO()); dpView = new Date(todayISO()+'T00:00:00');
+  closeDp(); syncDate(); validate();
+});
+document.addEventListener('click',()=>closeDp());
+
+function syncDate(){
+  const v = state.date, t = todayISO();
+  $('dateEcho').textContent = v && v===t ? 'Today' : '';
+  const back = v ? daysBetween(v,t) : 0;
+  const warn = $('backdateWarn');
+  if(v && back > 0){
+    const noun = $('outcome').value === 'lodge'
+      ? `Statutory day counts will run from ${fmt(v)}, not today.`
+      : `The decision will be recorded as taken on ${fmt(v)}.`;
+    $('backdateText').textContent = `Backdated ${back} ${back===1?'day':'days'}. ${noun}`;
+    warn.classList.remove('hidden');
+  } else warn.classList.add('hidden');
+}
+
+function validate(){
+  const o = $('outcome').value;
+  const d = state.date;
+  const needsTeam = (o === 'lodge' && !state.forwarded);
+  const ok = !!o && !!d && d <= todayISO() && (!needsTeam || !!$('team').value);
+  $('toConfirm').disabled = !ok;
+}
+
+/* ---------------- step 2 ---------------- */
+$('toConfirm').addEventListener('click',()=>{
+  const o = $('outcome').value;
+  state.outcome = o;
+  state.team = $('team').value;
+  state.note = $('fileNote').value.trim();
+
+  const rows = [
+    ['Outcome', OUTCOMES[o].label],
+    [OUTCOMES[o].dateLabel, fmt(state.date) + (state.date===todayISO() ? ' (today)' : ` — backdated ${daysBetween(state.date,todayISO())} days`)]
+  ];
+  if(o === 'lodge') rows.push(['Forward to', state.team || 'Already forwarded — Planning team East']);
+  rows.push(['Internal file note', state.note || '__none__']);
+
+  $('summary').innerHTML = rows.map(([k,v])=>
+    `<div class="summary-row"><dt>${k}</dt><dd class="${v==='__none__'?'muted':''}">${v==='__none__'?'No note recorded':v}</dd></div>`
+  ).join('');
+
+  close('bd1'); open('bd2');
+});
+$('backToOne').addEventListener('click',()=>{ close('bd2'); open('bd1'); });
+
+/* ---------------- commit ---------------- */
+$('doConfirm').addEventListener('click',()=>{
+  close('bd2');
+  state.finalised = true;
+  const o = OUTCOMES[state.outcome];
+
+  const strip = $('outcomeStrip');
+  strip.innerHTML = `<b>${o.label}</b> &middot; ${o.dateLabel} ${fmt(state.date)}`
+    + (state.outcome==='lodge' ? ` &middot; forwarded to ${state.team || 'Planning team East'}` : '')
+    + (state.note ? `<div style="margin-top:5px;color:var(--ink-med)">File note: ${state.note.replace(/</g,'&lt;')}</div>` : '');
+  strip.classList.add('show');
+  strip.classList.toggle('neutral', state.outcome !== 'lodge');
+
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-tab="complete"]').classList.add('active');
+  state.tab = 'complete';
+  renderTable();
+
+  $('toastText').textContent = `DA445607 finalised — ${o.past} ${fmt(state.date)}`;
+  $('toast').classList.add('show');
+  setTimeout(()=>$('toast').classList.remove('show'), 4200);
+});
+
+/* ---------------- demo controls ---------------- */
+function setForwarded(v){
+  state.forwarded = v;
+  $('fwdYes').classList.toggle('on', v);
+  $('fwdNo').classList.toggle('on', !v);
+  if($('bd1').classList.contains('open')) $('outcome').dispatchEvent(new Event('change'));
+  renderTable();
+}
+$('fwdYes').addEventListener('click',()=>setForwarded(true));
+$('fwdNo').addEventListener('click',()=>setForwarded(false));
+$('resetDemo').addEventListener('click',()=>{
+  state.finalised=false; state.outcome=''; state.date=''; state.team=''; state.note='';
+  $('outcomeStrip').classList.remove('show');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-tab="inprogress"]').classList.add('active');
+  state.tab='inprogress';
+  renderTable();
+});
+
+renderTable();
+</script>
+</body>
+</html>
